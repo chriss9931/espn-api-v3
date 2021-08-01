@@ -29,7 +29,7 @@ def buildLeague(league, fetch_credentials=False):
         league.swid, league.espn_s2 = get_credentials()
         
     league.cookies = {'swid' : league.swid, 'espn_s2' : league.espn_s2}
-    settings = requests.get(league.url, cookies=league.cookies, params={'view' : 'mSettings'}).json()
+    settings = requests.get(league.url, cookies=league.cookies, params={'view' : 'mSettings'}).json()[0]
     
     # Try navigating the settings tree. If an error occurs, the league is not accessible
     try:
@@ -60,9 +60,9 @@ def buildLeague(league, fetch_credentials=False):
     # Gather league information
     print('[BUILDING LEAGUE] Gathering team information...')
     league.regSeasonWeeks = league.settings['scheduleSettings']['matchupPeriodCount']
-    league.teamData = requests.get(league.url, cookies = league.cookies, params = {'view' : 'mTeam'}).json()
+    league.teamData = requests.get(league.url, cookies = league.cookies, params = {'view' : 'mTeam'}).json()[0]
     print('[BUILDING LEAGUE] Gathering matchup data...')
-    league.matchupData = requests.get(league.url, cookies = league.cookies, params = {'view' : 'mMatchupScore'}).json()
+    league.matchupData = requests.get(league.url, cookies = league.cookies, params = {'view' : 'mMatchupScore'}).json()[0]
     if league.year < 2019:
         league.teamData = league.teamData[0]
         league.matchupData = league.matchupData[0]
@@ -157,13 +157,13 @@ def buildTeams(league):
             if league.year < 2019:
                 matchupData = matchupData[0]
         else: 
-            matchupData = league.matchupData
+            matchupData = league.matchupData[0]
         
         
         print('[BUILDING LEAGUE] \tBuilding week %d/%d...' % (week, league.settings['scheduleSettings']['matchupPeriodCount']))             
         for m in range((week-1)*league.numTeams // 2, (week)*league.numTeams // 2):  
-            awayTeam = matchupData['schedule'][m]['away']           # Define the away team of the matchup
-            homeTeam = matchupData['schedule'][m]['home']           # Define the home team of the matchup
+            awayTeam = matchupData[0]['schedule'][m]['away']           # Define the away team of the matchup
+            homeTeam = matchupData[0]['schedule'][m]['home']           # Define the home team of the matchup
             
             awayId = league.adjustIds[awayTeam['teamId']]             # Define the teamIndex of the away team
             homeId = league.adjustIds[homeTeam['teamId']]             # Define the teamIndex of the home team
